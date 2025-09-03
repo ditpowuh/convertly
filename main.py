@@ -14,6 +14,7 @@ def main(page: ft.Page):
 
     page.title = "Convertly"
 
+    processing = False
     file = None
     directory = None
 
@@ -67,30 +68,65 @@ def main(page: ft.Page):
             page.update()
 
     def updateDropdown(fileName: str):
-        givenExtension = fileName.split(".")[1]
-        for type, extensions in files.fileTypes.items():
-            if givenExtension in extensions:
-                conversionDropdown.options = [ft.DropdownOption(key = extension, content = ft.Text(value = extension)) for extension in extensions if extension != givenExtension]
-                conversionDropdown.disabled = False
-                conversionDropdown.value = conversionDropdown.options[0].key
-                page.update()
-                return
-        conversionDropdown.key = None
-        conversionDropdown.value = None
-        conversionDropdown.options = []
-        conversionDropdown.disabled = True
+        givenExtension = fileName.split(".")[1].lower()
+        extensions = files.getPossibleExtensions(givenExtension)
+        if len(extensions) != 0:
+            conversionDropdown.options = [ft.DropdownOption(key = extension, content = ft.Text(extension)) for extension in extensions if extension != givenExtension]
+            conversionDropdown.disabled = False
+            conversionDropdown.value = conversionDropdown.options[0].key
+        else:
+            conversionDropdown.options = []
+            conversionDropdown.disabled = True
+            conversionDropdown.key = "None"
+            conversionDropdown.value = ""
         page.update()
 
     def convertFile():
+        nonlocal processing
+        if processing:
+            return page.open(ft.SnackBar(ft.Text("A conversion is still in progress.", weight = ft.FontWeight.BOLD), duration = 2000))
         if file == None:
             return page.open(ft.SnackBar(ft.Text("Please select a file.", weight = ft.FontWeight.BOLD), duration = 2000))
         if directory == None:
             return page.open(ft.SnackBar(ft.Text("Please select an output directory.", weight = ft.FontWeight.BOLD), duration = 2000))
-        if conversionDropdown.value == None:
-            return page.open(ft.SnackBar(ft.Text("File is invalid.", weight = ft.FontWeight.BOLD), duration = 2000))
-        extension = file.name.split(".")[1]
-        if extension in files.fileTypes["imageExtensions"]:
-            files.convertImage(file.name, file.path, directory, conversionDropdown.value)
+        if conversionDropdown.value == None or conversionDropdown.value == "":
+            return page.open(ft.SnackBar(ft.Text("Given file does not have any available conversions.", weight = ft.FontWeight.BOLD), duration = 2000))
+
+        processing = True
+
+        extension = file.name.split(".")[1].lower()
+        selectedFormat = conversionDropdown.value
+
+        if extension in files.fileTypes["group"]["images"]["content"]:
+            if selectedFormat in files.fileTypes["group"]["images"]["content"] or selectedFormat == "gif":
+                files.convertImage(file.name, file.path, directory, selectedFormat)
+            elif selectedFormat == "pdf":
+                files.convertImageToPdf(file.name, file.path, directory)
+
+        if extension in files.fileTypes["group"]["audio"]["content"] and selectedFormat in files.fileTypes["group"]["audio"]["content"]:
+            files.convertAudio(file.name, file.path, directory, selectedFormat)
+
+        if extension in files.fileTypes["group"]["videos"]["content"]:
+            if selectedFormat in files.fileTypes["group"]["videos"]["content"]:
+                files.convertVideo(file.name, file.path, directory, selectedFormat)
+            elif selectedFormat in files.fileTypes["group"]["audio"]["content"]:
+                files.convertVideoToAudio(file.name, file.path, directory, selectedFormat)
+            elif selectedFormat == "gif":
+                files.convertVideoToGif(file.name, file.path, directory)
+
+        if extension in files.fileTypes["group"]["fonts"]["content"] and selectedFormat in files.fileTypes["group"]["fonts"]["content"]:
+            files.convertFont(file.name, file.path, directory, selectedFormat)
+
+        if extension == "gif":
+            if selectedFormat in files.fileTypes["group"]["images"]["content"]:
+                files.convertImage(file.name, file.path, directory, selectedFormat)
+            if selectedFormat in files.fileTypes["group"]["videos"]["content"]:
+                files.convertGifToVideo(file.name, file.path, directory, selectedFormat)
+
+        if extension == "pdf" and selectedFormat in files.fileTypes["group"]["images"]["content"]:
+            files.convertPdfToImage(file.name, file.path, directory, selectedFormat)
+
+        processing = False
         page.open(ft.SnackBar(ft.Text("Successfully converted and save!", weight = ft.FontWeight.BOLD), duration = 2000))
 
     filePicker = ft.FilePicker(on_result = fileResult)
