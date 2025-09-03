@@ -199,4 +199,4 @@ def main(page: ft.Page):
     page.update()
 
 if __name__ == "__main__":
-    ft.app(main)
+    ft.app(main, assets_dir = "assets")

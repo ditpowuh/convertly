@@ -7,7 +7,7 @@
 - moviepy (tested with 2.1.2)
 - fonttools (tested with 4.57.0)
 - pdf2image (tested with 1.17.0)
-- opencv-python (tested with 4.12.0)
+- opencv-python (tested with 4.12.0.88)
 - numpy (tested with 2.2.6)
 
 #### additional prerequisites
@@ -29,3 +29,10 @@
 1. Download the application from `Releases`
 2. Extract the contents of the zip file
 3. Run the executable file
+
+### Building
+#### Windows
+After all prerequisites and requirements are properly installed and in place, the application can be built via the following command:
+```
+flet build windows
+```
