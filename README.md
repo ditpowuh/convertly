@@ -16,8 +16,6 @@
 - poppler
   - Store folder in `src/assets` under the name of `poppler`
 
-<hr>
-
 > A Flet application used to convert a number of different formats between each other.
 
 ### How to use
