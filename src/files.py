@@ -3,6 +3,7 @@ from fontTools.ttLib import TTFont
 from moviepy import VideoFileClip
 from pydub import AudioSegment
 import numpy as np
+import pillow_heif
 import pdf2image
 import cv2
 
@@ -11,6 +12,7 @@ import tempfile
 import os
 
 AudioSegment.converter = os.path.join(os.path.dirname(__file__), "assets", "ffmpeg.exe")
+pillow_heif.register_heif_opener()
 
 fileTypes = {
     "group": {
@@ -20,7 +22,8 @@ fileTypes = {
                 "jpg",
                 "jpeg",
                 "webp",
-                "bmp"
+                "bmp",
+                "heic"
             ],
             "other": {
                 "individual": ["gif", "pdf"]
