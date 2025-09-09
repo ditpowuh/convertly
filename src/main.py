@@ -68,7 +68,7 @@ def main(page: ft.Page):
             page.update()
 
     def updateDropdown(fileName: str):
-        givenExtension = fileName.split(".")[1].lower()
+        givenExtension = fileName.split(".")[-1].lower()
         extensions = files.getPossibleExtensions(givenExtension)
         if len(extensions) != 0:
             conversionDropdown.options = [ft.DropdownOption(key = extension, content = ft.Text(extension)) for extension in extensions if extension != givenExtension]
@@ -94,7 +94,7 @@ def main(page: ft.Page):
 
         processing = True
 
-        extension = file.name.split(".")[1].lower()
+        extension = file.name.split(".")[-1].lower()
         selectedFormat = conversionDropdown.value
 
         if extension in files.fileTypes["group"]["images"]["content"]:

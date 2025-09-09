@@ -110,20 +110,23 @@ def getFinalPath(name: str, outputPath: str):
     counter = 1
     while os.path.exists(finalPath):
         counter += 1
-        finalPath = os.path.join(outputPath, f"{fileName[0]} ({counter}).{fileName[1]}")
+        finalPath = os.path.join(outputPath, f"{fileName[0]} ({counter}).{fileName[-1]}")
     return finalPath
+
+def getOnlyName(fileName: str):
+    return ".".join(fileName.split(".")[:-1])
 
 def convertImage(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     with Image.open(inputPath) as img:
         if targetExtension in ["jpg", "jpeg"] and img.mode in ["RGBA", "P"]:
             img = img.convert("RGB")
-        img.save(getFinalPath(f"{fileName.split(".")[0]}.{targetExtension}", outputPath))
+        img.save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
 
 def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     with Image.open(inputPath) as img:
         width, height = img.size
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        video = cv2.VideoWriter(getFinalPath(f"{fileName.split(".")[0]}.{targetExtension}", outputPath), fourcc, 30, (width, height))
+        video = cv2.VideoWriter(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), fourcc, 30, (width, height))
 
         for frame in ImageSequence.Iterator(img):
             frame = frame.convert("RGB")
@@ -137,33 +140,33 @@ def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExte
 
 def convertVideoToGif(fileName: str, inputPath: str, outputPath: str):
     clip = VideoFileClip(inputPath)
-    clip.write_gif(getFinalPath(f"{fileName.split(".")[0]}.gif", outputPath))
+    clip.write_gif(getFinalPath(f"{getOnlyName(fileName)}.gif", outputPath))
 
 def convertVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     video = VideoFileClip(inputPath)
-    video.write_videofile(getFinalPath(f"{fileName.split(".")[0]}.{targetExtension}", outputPath))
+    video.write_videofile(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
 
 def convertImageToPdf(fileName: str, inputPath: str, outputPath: str):
     with Image.open(inputPath) as img:
         if img.mode in ["RGBA", "P"]:
             img = img.convert("RGB")
-        img.save(getFinalPath(f"{fileName.split(".")[0]}.pdf", outputPath), "PDF")
+        img.save(getFinalPath(f"{getOnlyName(fileName)}.pdf", outputPath), "PDF")
 
 def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     images = pdf2image.convert_from_path(inputPath, poppler_path = os.path.join(os.path.dirname(__file__), "assets", "poppler", "Library", "bin"))
     if len(images) == 1:
-        images[0].save(getFinalPath(f"{fileName.split(".")[0]}.{targetExtension}", outputPath))
+        images[0].save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
     else:
-        with zipfile.ZipFile(getFinalPath(f"{fileName.split(".")[0]}.zip", outputPath), "w") as zipf:
+        with zipfile.ZipFile(getFinalPath(f"{getOnlyName(fileName)}.zip", outputPath), "w") as zipf:
             for i, image in enumerate(images):
                 with tempfile.NamedTemporaryFile(suffix = f".{targetExtension}", delete_on_close = False) as temp:
                     image.save(temp.name)
-                    zipf.write(temp.name, arcname = f"{fileName.split(".")[0]}_{i + 1}.{targetExtension}")
+                    zipf.write(temp.name, arcname = f"{getOnlyName(fileName)}_{i + 1}.{targetExtension}")
 
 def convertAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     audio = AudioSegment.from_file(inputPath)
     desiredFormat = "ipod" if targetExtension == "m4a" else targetExtension
-    audio.export(getFinalPath(f"{fileName.split(".")[0]}.{targetExtension}", outputPath), format = desiredFormat)
+    audio.export(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), format = desiredFormat)
 
 def convertVideoToAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     with tempfile.NamedTemporaryFile(suffix = ".wav", delete_on_close = False) as temp:
@@ -172,7 +175,7 @@ def convertVideoToAudio(fileName: str, inputPath: str, outputPath: str, targetEx
 
         audio = AudioSegment.from_file(temp.name, format = "wav")
         desiredFormat = "ipod" if targetExtension == "m4a" else targetExtension
-        audio.export(getFinalPath(f"{fileName.split(".")[0]}.{targetExtension}", outputPath), format = desiredFormat)
+        audio.export(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), format = desiredFormat)
 
 def convertFont(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     font = TTFont(inputPath)
@@ -180,4 +183,4 @@ def convertFont(fileName: str, inputPath: str, outputPath: str, targetExtension:
         font.flavor = None
     else:
         font.flavor = targetExtension
-    font.save(getFinalPath(f"{fileName.split(".")[0]}.{targetExtension}", outputPath))
+    font.save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
