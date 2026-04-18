@@ -1,6 +1,6 @@
 import flet as ft
 
-import files
+import converter
 
 def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT
@@ -58,7 +58,7 @@ def main(page: ft.Page):
 
     def updateDropdown(fileName: str):
         givenExtension = fileName.split(".")[-1].lower()
-        extensions = files.getPossibleExtensions(givenExtension)
+        extensions = converter.getPossibleExtensions(givenExtension)
         if len(extensions) != 0:
             conversionDropdown.options = [ft.DropdownOption(key = extension, content = ft.Text(extension)) for extension in extensions if extension != givenExtension]
             conversionDropdown.disabled = False
@@ -86,34 +86,34 @@ def main(page: ft.Page):
         extension = file.name.split(".")[-1].lower()
         selectedFormat = conversionDropdown.value
 
-        if extension in files.fileTypes["group"]["images"]["content"]:
-            if selectedFormat in files.fileTypes["group"]["images"]["content"] or selectedFormat == "gif":
-                files.convertImage(file.name, file.path, directory, selectedFormat)
+        if extension in converter.fileTypes["group"]["images"]["content"]:
+            if selectedFormat in converter.fileTypes["group"]["images"]["content"] or selectedFormat == "gif":
+                converter.convertImage(file.name, file.path, directory, selectedFormat)
             elif selectedFormat == "pdf":
-                files.convertImageToPdf(file.name, file.path, directory)
+                converter.convertImageToPdf(file.name, file.path, directory)
 
-        if extension in files.fileTypes["group"]["audio"]["content"] and selectedFormat in files.fileTypes["group"]["audio"]["content"]:
-            files.convertAudio(file.name, file.path, directory, selectedFormat)
+        if extension in converter.fileTypes["group"]["audio"]["content"] and selectedFormat in converter.fileTypes["group"]["audio"]["content"]:
+            converter.convertAudio(file.name, file.path, directory, selectedFormat)
 
-        if extension in files.fileTypes["group"]["videos"]["content"]:
-            if selectedFormat in files.fileTypes["group"]["videos"]["content"]:
-                files.convertVideo(file.name, file.path, directory, selectedFormat)
-            elif selectedFormat in files.fileTypes["group"]["audio"]["content"]:
-                files.convertVideoToAudio(file.name, file.path, directory, selectedFormat)
+        if extension in converter.fileTypes["group"]["videos"]["content"]:
+            if selectedFormat in converter.fileTypes["group"]["videos"]["content"]:
+                converter.convertVideo(file.name, file.path, directory, selectedFormat)
+            elif selectedFormat in converter.fileTypes["group"]["audio"]["content"]:
+                converter.convertVideoToAudio(file.name, file.path, directory, selectedFormat)
             elif selectedFormat == "gif":
-                files.convertVideoToGif(file.name, file.path, directory)
+                converter.convertVideoToGif(file.name, file.path, directory)
 
-        if extension in files.fileTypes["group"]["fonts"]["content"] and selectedFormat in files.fileTypes["group"]["fonts"]["content"]:
-            files.convertFont(file.name, file.path, directory, selectedFormat)
+        if extension in converter.fileTypes["group"]["fonts"]["content"] and selectedFormat in converter.fileTypes["group"]["fonts"]["content"]:
+            converter.convertFont(file.name, file.path, directory, selectedFormat)
 
         if extension == "gif":
-            if selectedFormat in files.fileTypes["group"]["images"]["content"]:
-                files.convertImage(file.name, file.path, directory, selectedFormat)
-            if selectedFormat in files.fileTypes["group"]["videos"]["content"]:
-                files.convertGifToVideo(file.name, file.path, directory, selectedFormat)
+            if selectedFormat in converter.fileTypes["group"]["images"]["content"]:
+                converter.convertImage(file.name, file.path, directory, selectedFormat)
+            if selectedFormat in converter.fileTypes["group"]["videos"]["content"]:
+                converter.convertGifToVideo(file.name, file.path, directory, selectedFormat)
 
-        if extension == "pdf" and selectedFormat in files.fileTypes["group"]["images"]["content"]:
-            files.convertPdfToImage(file.name, file.path, directory, selectedFormat)
+        if extension == "pdf" and selectedFormat in converter.fileTypes["group"]["images"]["content"]:
+            converter.convertPdfToImage(file.name, file.path, directory, selectedFormat)
 
         processing = False
         page.show_dialog(ft.SnackBar(ft.Text("Successfully converted and save!", weight = ft.FontWeight.BOLD), duration = 2000))
