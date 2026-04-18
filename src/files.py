@@ -1,17 +1,15 @@
 from PIL import Image, ImageSequence
 from fontTools.ttLib import TTFont
-from moviepy import VideoFileClip
-from pydub import AudioSegment
 import numpy as np
 import pillow_heif
-import pdf2image
+import fitz
 import cv2
+import av
 
 import zipfile
 import tempfile
 import os
 
-AudioSegment.converter = os.path.join(os.path.dirname(__file__), "assets", "ffmpeg.exe")
 pillow_heif.register_heif_opener()
 
 fileTypes = {
@@ -139,12 +137,62 @@ def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExte
         video.release()
 
 def convertVideoToGif(fileName: str, inputPath: str, outputPath: str):
-    clip = VideoFileClip(inputPath)
-    clip.write_gif(getFinalPath(f"{getOnlyName(fileName)}.gif", outputPath))
+    output = getFinalPath(f"{getOnlyName(fileName)}.gif", outputPath)
+
+    container = av.open(inputPath)
+
+    frames = []
+    for frame in container.decode(video=0):
+        img = frame.to_image()
+        frames.append(img)
+
+    frames[0].save(output, save_all = True, append_images = frames[1:], duration = 100, loop = 0)
 
 def convertVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
-    video = VideoFileClip(inputPath)
-    video.write_videofile(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
+    output = getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)
+
+    containerMap = {
+        "mp4": "mp4",
+        "mkv": "matroska",
+        "webm": "webm",
+        "avi": "avi"
+    }
+
+    codecMap = {
+        "mp4": "libx264",
+        "mkv": "libx264",
+        "avi": "mpeg4",
+        "webm": "libvpx"
+    }
+
+    containerFormat = containerMap.get(targetExtension)
+    codec = codecMap.get(targetExtension)
+
+    if not containerFormat or not codec:
+        raise ValueError(f"Unsupported format: {targetExtension}")
+
+    inputContainer = av.open(inputPath)
+    outputContainer = av.open(output, mode = "w", format = containerFormat)
+
+    video_stream = next((s for s in inputContainer.streams if s.type == "video"), None)
+    if not video_stream:
+        raise ValueError("No video stream found")
+
+    outStream = outputContainer.add_stream(codec)
+    outStream.width = video_stream.width
+    outStream.height = video_stream.height
+    outStream.pix_fmt = "yuv420p"
+
+    for frame in inputContainer.decode(video_stream):
+        packet = outStream.encode(frame)
+        if packet:
+            outputContainer.mux(packet)
+
+    packet = outStream.encode(None)
+    if packet:
+        outputContainer.mux(packet)
+
+    outputContainer.close()
 
 def convertImageToPdf(fileName: str, inputPath: str, outputPath: str):
     with Image.open(inputPath) as img:
@@ -153,29 +201,117 @@ def convertImageToPdf(fileName: str, inputPath: str, outputPath: str):
         img.save(getFinalPath(f"{getOnlyName(fileName)}.pdf", outputPath), "PDF")
 
 def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
-    images = pdf2image.convert_from_path(inputPath, poppler_path = os.path.join(os.path.dirname(__file__), "assets", "poppler", "Library", "bin"))
+    doc = fitz.open(inputPath)
+
+    images = []
+    for i, page in enumerate(doc):
+        pix = page.get_pixmap(dpi = 200)
+        images.append((i, pix))
+
     if len(images) == 1:
-        images[0].save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
+        i, pix = images[0]
+        pix.save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
+
     else:
         with zipfile.ZipFile(getFinalPath(f"{getOnlyName(fileName)}.zip", outputPath), "w") as zipf:
-            for i, image in enumerate(images):
-                with tempfile.NamedTemporaryFile(suffix = f".{targetExtension}", delete_on_close = False) as temp:
-                    image.save(temp.name)
-                    zipf.write(temp.name, arcname = f"{getOnlyName(fileName)}_{i + 1}.{targetExtension}")
+            for i, pix in images:
+                with tempfile.NamedTemporaryFile(suffix = f".{targetExtension}", delete = False) as temp:
+                    tempPath = temp.name
+
+                pix.save(tempPath)
+                zipf.write(tempPath, arcname = f"{getOnlyName(fileName)}_{i + 1}.{targetExtension}")
+
+                os.remove(tempPath)
 
 def convertAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
-    audio = AudioSegment.from_file(inputPath)
-    desiredFormat = "ipod" if targetExtension == "m4a" else targetExtension
-    audio.export(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), format = desiredFormat)
+    output = getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)
+
+    inputContainer = av.open(inputPath)
+
+    audioStream = next((s for s in inputContainer.streams if s.type == "audio"), None)
+    if audioStream is None:
+        raise ValueError("No audio stream found in input file")
+
+    outputContainer = av.open(output, mode="w")
+
+    codecMap = {
+        "mp3": "libmp3lame",
+        "wav": "pcm_s16le",
+        "aac": "aac",
+        "m4a": "aac",
+        "flac": "flac",
+        "ogg": "libvorbis"
+    }
+
+    codec = codecMap.get(targetExtension, None)
+    if codec is None:
+        raise ValueError(f"Unsupported target audio format: {targetExtension}")
+
+    outStream = outputContainer.add_stream(codec)
+
+    outStream.rate = audioStream.rate
+    outStream.channels = audioStream.channels
+
+    for packet in inputContainer.demux(audioStream):
+        for frame in packet.decode():
+            packet = outStream.encode(frame)
+            if packet:
+                outputContainer.mux(packet)
+
+    packet = outStream.encode(None)
+    if packet:
+        outputContainer.mux(packet)
+
+    outputContainer.close()
 
 def convertVideoToAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
-    with tempfile.NamedTemporaryFile(suffix = ".wav", delete_on_close = False) as temp:
-        with VideoFileClip(inputPath) as video:
-            video.audio.write_audiofile(temp.name)
+    output = getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)
 
-        audio = AudioSegment.from_file(temp.name, format = "wav")
-        desiredFormat = "ipod" if targetExtension == "m4a" else targetExtension
-        audio.export(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), format = desiredFormat)
+    inputContainer = av.open(inputPath)
+
+    audioStream = next((s for s in inputContainer.streams if s.type == "audio"), None)
+    if not audioStream:
+        raise ValueError("No audio stream found")
+
+    codecMap = {
+        "mp3": "libmp3lame",
+        "wav": "pcm_s16le",
+        "aac": "aac",
+        "m4a": "aac",
+        "flac": "flac",
+        "ogg": "libvorbis"
+    }
+
+    containerMap = {
+        "mp3": "mp3",
+        "wav": "wav",
+        "aac": "adts",
+        "m4a": "ipod",
+        "flac": "flac",
+        "ogg": "ogg"
+    }
+
+    codec = codecMap.get(targetExtension)
+    container = containerMap.get(targetExtension)
+
+    if not codec or not container:
+        raise ValueError(f"Unsupported format: {targetExtension}")
+
+    outputContainer = av.open(output, mode="w", format=container)
+
+    outStream = outputContainer.add_stream(codec)
+
+    for packet in inputContainer.demux(audioStream):
+        for frame in packet.decode():
+            packet = outStream.encode(frame)
+            if packet:
+                outputContainer.mux(packet)
+
+    packet = outStream.encode(None)
+    if packet:
+        outputContainer.mux(packet)
+
+    outputContainer.close()
 
 def convertFont(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     font = TTFont(inputPath)

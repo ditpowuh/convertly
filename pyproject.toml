@@ -3,19 +3,27 @@ name = "Convertly"
 version = "0.1.0"
 description = ""
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 authors = [{name = "Ditpowuh"}]
 dependencies = [
-  "flet==0.28.3",
-  "pydub==0.25.1",
-  "moviepy==2.2.1",
-  "fonttools==4.59.2",
-  "pillow==11.3.0",
-  "pillow_heif==1.1.0",
-  "pdf2image==1.17.0",
-  "opencv-python==4.12.0.88",
-  "numpy==2.2.6"
+    "flet>=0.84.0",
+    "av (>=17.0.0,<18.0.0)",
+    "fonttools (>=4.62.1,<5.0.0)",
+    "pillow (>=12.2.0,<13.0.0)",
+    "pillow-heif (>=1.3.0,<2.0.0)",
+    "numpy (>=2.4.4,<3.0.0)",
+    "opencv-python (>=4.13.0.92,<5.0.0.0)",
+    "brotli (>=1.2.0,<2.0.0)",
+    "pymupdf (>=1.27.2.2,<2.0.0.0)"
 ]
+
+[dependency-groups]
+dev = [
+    "flet-cli>=0.84.0",
+    "flet-desktop>=0.84.0",
+    "flet-web>=0.84.0",
+]
+
 
 [tool.flet]
 product = "Convertly"
@@ -32,14 +40,3 @@ message = "Preparing Convertly..."
 [tool.flet.app.startup_screen]
 show = true
 message = "Starting up Convertly..."
-
-[tool.uv]
-dev-dependencies = [
-  "flet[all]==0.28.3"
-]
-
-[tool.poetry]
-package-mode = false
-
-[tool.poetry.group.dev.dependencies]
-flet = {extras = ["all"], version = "0.28.3"}

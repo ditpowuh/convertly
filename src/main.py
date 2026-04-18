@@ -5,6 +5,7 @@ import files
 def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT
     page.theme = ft.Theme(color_scheme_seed = ft.Colors.INDIGO)
+    page.window.alignment = ft.Alignment.CENTER
     page.window.title_bar_hidden = True
     page.window.min_width = 854
     page.window.min_height = 576
@@ -18,6 +19,17 @@ def main(page: ft.Page):
     file = None
     directory = None
 
+    def resizeWindow():
+        page.window.maximized = not page.window.maximized
+        page.update()
+
+    def minimiseWindow():
+        page.window.minimized = True
+        page.update()
+
+    async def closeWindow(e):
+        await page.window.close()
+
     page.add(
         ft.ResponsiveRow([
             ft.WindowDragArea(
@@ -28,44 +40,21 @@ def main(page: ft.Page):
                     content = ft.Row([
                         ft.Container(
                             content = ft.Text("Convertly", size = 20, color = "#000000", weight = ft.FontWeight.BOLD),
-                            padding = ft.padding.only(left = 10)
+                            padding = ft.Padding.only(left = 10)
                         ),
                         ft.Container(
                             content = ft.Row([
                                 ft.IconButton(ft.Icons.MINIMIZE_ROUNDED, icon_color = "#000000", on_click = lambda _ : minimiseWindow()),
                                 ft.IconButton(ft.Icons.CHECK_BOX_OUTLINE_BLANK_ROUNDED, icon_color = "#000000", on_click = lambda _ : resizeWindow()),
-                                ft.IconButton(ft.Icons.CLOSE_ROUNDED, icon_color = "#000000", on_click = lambda _ : page.window.close())
+                                ft.IconButton(ft.Icons.CLOSE_ROUNDED, icon_color = "#000000", on_click = closeWindow)
                             ])
                         )
                     ], alignment = "spaceBetween"),
-                    border_radius = ft.border_radius.only(bottom_left = 8, bottom_right = 8)
+                    border_radius = ft.BorderRadius.only(bottom_left = 8, bottom_right = 8)
                 )
             )
         ])
     )
-
-    def resizeWindow():
-        page.window.maximized = not page.window.maximized
-        page.update()
-
-    def minimiseWindow():
-        page.window.minimized = True
-        page.update()
-
-    def fileResult(event: ft.FilePickerResultEvent):
-        nonlocal file
-        if event.files:
-            file = event.files[0]
-            fileText.value = file.path
-            updateDropdown(file.name)
-            page.update()
-
-    def directoryResult(event: ft.FilePickerResultEvent):
-        nonlocal directory
-        if event.path:
-            directory = event.path
-            directoryText.value = event.path + "\\"
-            page.update()
 
     def updateDropdown(fileName: str):
         givenExtension = fileName.split(".")[-1].lower()
@@ -84,13 +73,13 @@ def main(page: ft.Page):
     def convertFile():
         nonlocal processing
         if processing:
-            return page.open(ft.SnackBar(ft.Text("A conversion is still in progress.", weight = ft.FontWeight.BOLD), duration = 2000))
+            return page.show_dialog(ft.SnackBar(ft.Text("A conversion is still in progress.", weight = ft.FontWeight.BOLD), duration = 2000))
         if file == None:
-            return page.open(ft.SnackBar(ft.Text("Please select a file.", weight = ft.FontWeight.BOLD), duration = 2000))
+            return page.show_dialog(ft.SnackBar(ft.Text("Please select a file.", weight = ft.FontWeight.BOLD), duration = 2000))
         if directory == None:
-            return page.open(ft.SnackBar(ft.Text("Please select an output directory.", weight = ft.FontWeight.BOLD), duration = 2000))
+            return page.show_dialog(ft.SnackBar(ft.Text("Please select an output directory.", weight = ft.FontWeight.BOLD), duration = 2000))
         if conversionDropdown.value == None or conversionDropdown.value == "":
-            return page.open(ft.SnackBar(ft.Text("Given file does not have any available conversions.", weight = ft.FontWeight.BOLD), duration = 2000))
+            return page.show_dialog(ft.SnackBar(ft.Text("Given file does not have any available conversions.", weight = ft.FontWeight.BOLD), duration = 2000))
 
         processing = True
 
@@ -127,12 +116,24 @@ def main(page: ft.Page):
             files.convertPdfToImage(file.name, file.path, directory, selectedFormat)
 
         processing = False
-        page.open(ft.SnackBar(ft.Text("Successfully converted and save!", weight = ft.FontWeight.BOLD), duration = 2000))
+        page.show_dialog(ft.SnackBar(ft.Text("Successfully converted and save!", weight = ft.FontWeight.BOLD), duration = 2000))
 
-    filePicker = ft.FilePicker(on_result = fileResult)
-    page.overlay.append(filePicker)
-    directoryPicker = ft.FilePicker(on_result = directoryResult)
-    page.overlay.append(directoryPicker)
+    async def pickFile():
+        nonlocal file
+        files = await ft.FilePicker().pick_files()
+        if files:
+            file = files[0]
+            fileText.value = file.path
+            updateDropdown(file.name)
+            page.update()
+
+    async def pickFolder():
+        nonlocal directory
+        path = await ft.FilePicker().get_directory_path()
+        if path:
+            directory = path
+            directoryText.value = directory + "\\"
+            page.update()
 
     fileText = ft.Text("No file selected", size = 16, weight = ft.FontWeight.BOLD)
     conversionDropdown = ft.Dropdown(
@@ -153,10 +154,10 @@ def main(page: ft.Page):
                 [fileText],
                 alignment = ft.MainAxisAlignment.CENTER,
             ),
-            padding = ft.padding.only(top = 25)
+            padding = ft.Padding.only(top = 25)
         ),
         ft.Row(
-            [ft.ElevatedButton("Select File", icon = ft.Icons.FILE_OPEN_ROUNDED, on_click = lambda _ : filePicker.pick_files())],
+            [ft.Button("Select File", icon = ft.Icons.FILE_OPEN_ROUNDED, on_click = pickFile)],
             alignment = ft.MainAxisAlignment.CENTER
         ),
         ft.Container(
@@ -167,17 +168,17 @@ def main(page: ft.Page):
                 ],
                 alignment = ft.MainAxisAlignment.CENTER
             ),
-            padding = ft.padding.only(top = 25)
+            padding = ft.Padding.only(top = 25)
         ),
         ft.Container(
             content = ft.Row(
                 [directoryText],
                 alignment = ft.MainAxisAlignment.CENTER,
             ),
-            padding = ft.padding.only(top = 25)
+            padding = ft.Padding.only(top = 25)
         ),
         ft.Row(
-            [ft.ElevatedButton("Select Directory", icon = ft.Icons.FOLDER_OUTLINED, on_click = lambda _ : directoryPicker.get_directory_path())],
+            [ft.Button("Select Directory", icon = ft.Icons.FOLDER_OUTLINED, on_click = pickFolder)],
             alignment = ft.MainAxisAlignment.CENTER
         ),
         ft.Container(
@@ -191,12 +192,11 @@ def main(page: ft.Page):
                 ],
                 alignment = ft.MainAxisAlignment.CENTER
             ),
-            padding = ft.padding.only(top = 25)
+            padding = ft.Padding.only(top = 25)
         )
     )
 
-    page.window.center()
     page.update()
 
 if __name__ == "__main__":
-    ft.app(main, assets_dir = "assets")
+    ft.run(main, assets_dir = "assets")
