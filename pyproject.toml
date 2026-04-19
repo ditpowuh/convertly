@@ -3,18 +3,18 @@ name = "Convertly"
 version = "0.1.0"
 description = ""
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11, <4.0"
 authors = [{name = "Ditpowuh"}]
 dependencies = [
+    "ffmpeg-binaries-compat (>=1.1.0,<2.0.0)",
     "flet>=0.84.0",
-    "av (>=17.0.0,<18.0.0)",
     "fonttools (>=4.62.1,<5.0.0)",
-    "pillow (>=12.2.0,<13.0.0)",
-    "pillow-heif (>=1.3.0,<2.0.0)",
     "numpy (>=2.4.4,<3.0.0)",
     "opencv-python (>=4.13.0.92,<5.0.0.0)",
-    "brotli (>=1.2.0,<2.0.0)",
-    "pymupdf (>=1.27.2.2,<2.0.0.0)"
+    "pillow (>=12.2.0,<13.0.0)",
+    "pillow-heif (>=1.3.0,<2.0.0)",
+    "pymupdf (>=1.27.2.2,<2.0.0.0)",
+    "python-ffmpeg (>=2.0.12,<3.0.0)"
 ]
 
 [dependency-groups]
@@ -22,6 +22,7 @@ dev = [
     "flet-cli>=0.84.0",
     "flet-desktop>=0.84.0",
     "flet-web>=0.84.0",
+    "pytest (>=9.0.3,<10.0.0)"
 ]
 
 

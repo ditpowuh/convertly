@@ -1,15 +1,18 @@
+import ffmpeg_binaries as ffmpeg
+from ffmpeg import FFmpeg
+
 from PIL import Image, ImageSequence
 from fontTools.ttLib import TTFont
 import numpy as np
 import pillow_heif
-import fitz
+import pymupdf
 import cv2
-import av
 
 import zipfile
 import tempfile
 import os
 
+ffmpeg.init()
 pillow_heif.register_heif_opener()
 
 fileTypes = {
@@ -33,11 +36,8 @@ fileTypes = {
               "m4v",
               "mov",
               "avi",
-              "wmv",
-              "flv",
               "webm",
               "mkv",
-              "3gp",
               "mpeg",
               "mpg",
               "vob"
@@ -49,17 +49,16 @@ fileTypes = {
         },
         "audio": {
             "content": [
-              "mp3",
-              "wav",
-              "aac",
-              "ogg",
-              "m4a",
-              "flac",
-              "alac",
-              "wma",
-              "aiff",
-              "amr",
-              "opus"
+                "mp3",
+                "wav",
+                "aac",
+                "ogg",
+                "m4a",
+                "flac",
+                "wma",
+                "aiff",
+                "amr",
+                "opus"
             ]
         },
         "fonts": {
@@ -137,62 +136,30 @@ def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExte
         video.release()
 
 def convertVideoToGif(fileName: str, inputPath: str, outputPath: str):
-    output = getFinalPath(f"{getOnlyName(fileName)}.gif", outputPath)
-
-    container = av.open(inputPath)
-
-    frames = []
-    for frame in container.decode(video=0):
-        img = frame.to_image()
-        frames.append(img)
-
-    frames[0].save(output, save_all = True, append_images = frames[1:], duration = 100, loop = 0)
+    filter = "split[s0][s1];[s0]palettegen=stats_mode=full[p];[s1][p]paletteuse=dither=sierra2_4a"
+    ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.gif", outputPath), {"filter_complex": filter, "loop": "0"}))
+    ffmpegInstance.execute()
 
 def convertVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
-    output = getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)
-
-    containerMap = {
-        "mp4": "mp4",
-        "mkv": "matroska",
-        "webm": "webm",
-        "avi": "avi"
+    options = {
+        "vcodec": "libx264",
+        "acodec": "aac",
+        "pix_fmt": "yuv420p",
+        "crf": "23"
     }
 
-    codecMap = {
-        "mp4": "libx264",
-        "mkv": "libx264",
-        "avi": "mpeg4",
-        "webm": "libvpx"
-    }
+    if targetExtension == "webm":
+        options["vcodec"] = "libvpx-vp9"
+        options["acodec"] = "libopus"
+    elif targetExtension in ["mpeg", "mpg", "vob"]:
+        options["vcodec"] = "mpeg2video"
+        options["acodec"] = "mp2"
+        options.pop("pix_fmt", None)
+        options.pop("crf", None)
+        options["q:v"] = "2"
 
-    containerFormat = containerMap.get(targetExtension)
-    codec = codecMap.get(targetExtension)
-
-    if not containerFormat or not codec:
-        raise ValueError(f"Unsupported format: {targetExtension}")
-
-    inputContainer = av.open(inputPath)
-    outputContainer = av.open(output, mode = "w", format = containerFormat)
-
-    video_stream = next((s for s in inputContainer.streams if s.type == "video"), None)
-    if not video_stream:
-        raise ValueError("No video stream found")
-
-    outStream = outputContainer.add_stream(codec)
-    outStream.width = video_stream.width
-    outStream.height = video_stream.height
-    outStream.pix_fmt = "yuv420p"
-
-    for frame in inputContainer.decode(video_stream):
-        packet = outStream.encode(frame)
-        if packet:
-            outputContainer.mux(packet)
-
-    packet = outStream.encode(None)
-    if packet:
-        outputContainer.mux(packet)
-
-    outputContainer.close()
+    ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), options))
+    ffmpegInstance.execute()
 
 def convertImageToPdf(fileName: str, inputPath: str, outputPath: str):
     with Image.open(inputPath) as img:
@@ -201,7 +168,7 @@ def convertImageToPdf(fileName: str, inputPath: str, outputPath: str):
         img.save(getFinalPath(f"{getOnlyName(fileName)}.pdf", outputPath), "PDF")
 
 def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
-    doc = fitz.open(inputPath)
+    doc = pymupdf.open(inputPath)
 
     images = []
     for i, page in enumerate(doc):
@@ -225,94 +192,15 @@ def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExte
                 os.remove(tempPath)
 
 def convertAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
-    output = getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)
-
-    inputContainer = av.open(inputPath)
-
-    audioStream = next((s for s in inputContainer.streams if s.type == "audio"), None)
-    if audioStream is None:
-        raise ValueError("No audio stream found in input file")
-
-    outputContainer = av.open(output, mode="w")
-
-    codecMap = {
-        "mp3": "libmp3lame",
-        "wav": "pcm_s16le",
-        "aac": "aac",
-        "m4a": "aac",
-        "flac": "flac",
-        "ogg": "libvorbis"
-    }
-
-    codec = codecMap.get(targetExtension, None)
-    if codec is None:
-        raise ValueError(f"Unsupported target audio format: {targetExtension}")
-
-    outStream = outputContainer.add_stream(codec)
-
-    outStream.rate = audioStream.rate
-    outStream.channels = audioStream.channels
-
-    for packet in inputContainer.demux(audioStream):
-        for frame in packet.decode():
-            packet = outStream.encode(frame)
-            if packet:
-                outputContainer.mux(packet)
-
-    packet = outStream.encode(None)
-    if packet:
-        outputContainer.mux(packet)
-
-    outputContainer.close()
+    ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)))
+    ffmpegInstance.execute()
 
 def convertVideoToAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
-    output = getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)
+    with tempfile.NamedTemporaryFile(suffix = ".wav", delete_on_close = False) as temp:
+        ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(temp.name, {"vn": None, "acodec": "pcm_s16le"}))
+        ffmpegInstance.execute()
 
-    inputContainer = av.open(inputPath)
-
-    audioStream = next((s for s in inputContainer.streams if s.type == "audio"), None)
-    if not audioStream:
-        raise ValueError("No audio stream found")
-
-    codecMap = {
-        "mp3": "libmp3lame",
-        "wav": "pcm_s16le",
-        "aac": "aac",
-        "m4a": "aac",
-        "flac": "flac",
-        "ogg": "libvorbis"
-    }
-
-    containerMap = {
-        "mp3": "mp3",
-        "wav": "wav",
-        "aac": "adts",
-        "m4a": "ipod",
-        "flac": "flac",
-        "ogg": "ogg"
-    }
-
-    codec = codecMap.get(targetExtension)
-    container = containerMap.get(targetExtension)
-
-    if not codec or not container:
-        raise ValueError(f"Unsupported format: {targetExtension}")
-
-    outputContainer = av.open(output, mode="w", format=container)
-
-    outStream = outputContainer.add_stream(codec)
-
-    for packet in inputContainer.demux(audioStream):
-        for frame in packet.decode():
-            packet = outStream.encode(frame)
-            if packet:
-                outputContainer.mux(packet)
-
-    packet = outStream.encode(None)
-    if packet:
-        outputContainer.mux(packet)
-
-    outputContainer.close()
+        convertAudio(fileName, temp.name, outputPath, targetExtension)
 
 def convertFont(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
     font = TTFont(inputPath)

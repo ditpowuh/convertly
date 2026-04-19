@@ -1,5 +1,3 @@
-src/assets/ffmpeg.exe
-src/assets/poppler
 __pycache__
 build
 storage
