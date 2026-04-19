@@ -210,15 +210,16 @@ def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExte
 
     if len(images) == 1:
         i, pix = images[0]
-        pix.save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
-
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        img.save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
     else:
         with zipfile.ZipFile(getFinalPath(f"{getOnlyName(fileName)}.zip", outputPath), "w") as zipf:
             for i, pix in images:
                 with tempfile.NamedTemporaryFile(suffix = f".{targetExtension}", delete = False) as temp:
                     tempPath = temp.name
 
-                pix.save(tempPath)
+                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                img.save(tempPath)
                 zipf.write(tempPath, arcname = f"{getOnlyName(fileName)}_{i + 1}.{targetExtension}")
 
                 os.remove(tempPath)
