@@ -19,7 +19,7 @@ def TitleBar():
         ft.WindowDragArea(
             ft.Container(
                 width = page.window.width,
-                bgcolor = "#eeeeee",
+                bgcolor = "#f5f2fa",
                 padding = 20,
                 content = ft.Row([
                     ft.Container(

@@ -11,9 +11,12 @@ def FileSelector(state):
                 ),
                 padding = ft.Padding.only(top = 25, bottom = 5)
             ),
-            ft.Row(
-                [ft.Button("Select File", icon = ft.Icons.FILE_OPEN_ROUNDED, on_click = state.pickFile)],
-                alignment = ft.MainAxisAlignment.CENTER
+            ft.Container(
+                content = ft.Row(
+                    [ft.Button("Select File", icon = ft.Icons.FILE_OPEN_ROUNDED, on_click = state.pickFile)],
+                    alignment = ft.MainAxisAlignment.CENTER
+                ),
+                padding = ft.Padding.only(bottom = 25)
             )
         ]
     )

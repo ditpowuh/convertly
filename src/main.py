@@ -86,7 +86,7 @@ def main(page: ft.Page):
     page.window.title_bar_hidden = True
     page.window.min_width = 854
     page.window.min_height = 576
-    page.bgcolor = "#dddddd"
+    page.bgcolor = "#e8e6f0"
     page.spacing = 15
     page.padding = 0
 
