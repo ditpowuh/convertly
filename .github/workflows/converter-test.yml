@@ -1,0 +1,35 @@
+name: Convertly Converter CI
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore: ["README.md", ".gitignore"]
+  pull_request:
+    branches: ["main"]
+    paths-ignore: ["README.md", ".gitignore"]
+
+jobs:
+  test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Install Poetry
+      run: pipx install poetry
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: poetry
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Run tests
+      run: poetry run pytest
