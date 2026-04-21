@@ -2,6 +2,9 @@ import flet as ft
 
 @ft.component
 def FileSelector(state):
+    async def pickFile():
+        await state.pickFile()
+
     return ft.Column(
         controls = [
             ft.Container(
@@ -13,7 +16,7 @@ def FileSelector(state):
             ),
             ft.Container(
                 content = ft.Row(
-                    [ft.Button("Select File", icon = ft.Icons.FILE_OPEN_ROUNDED, on_click = state.pickFile)],
+                    [ft.Button("Select File", icon = ft.Icons.FILE_OPEN_ROUNDED, on_click = pickFile)],
                     alignment = ft.MainAxisAlignment.CENTER
                 ),
                 padding = ft.Padding.only(bottom = 25)
