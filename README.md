@@ -2,13 +2,13 @@
 
 > A Flet application used to convert a number of different formats between each other.
 
-This app was originally made for my own personal use, where I needed some files to be in other formats without the hassle of online converters or privacy concerns.
+This app was originally made for my own personal use, where I needed some files to be in other formats without the hassle of online converters or privacy concerns. It is intended to be used on `Windows` devices.
 
 ### How to use
 #### Using Python (Poetry)
 1. Ensure you have [Poetry](https://python-poetry.org/) installed
 1. Install necessary dependencies/requirements via `poetry install`
-3. Run the command `poetry run flet run`
+3. Run the command `poetry run flet run -r`
 #### Using Releases
 1. Download the application from `Releases`
 2. Extract the contents of the zip file
@@ -29,7 +29,7 @@ Conversion between different categories is possible for some of them. For exampl
 
 ### Building
 #### Windows
-The application can be built via the following command:
+The application can be built via the following command (after dependencies are installed):
 ```
 poetry run flet build windows
 ```

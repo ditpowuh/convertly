@@ -29,6 +29,8 @@ dev = [
 product = "Convertly"
 company = "Ditpowuh"
 copyright = "Copyright (C) Ditpowuh 2025"
+org = "com.ditpowuh"
+bundle_id = "com.ditpowuh.convertly"
 
 [tool.flet.app]
 path = "src"
