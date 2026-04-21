@@ -1,0 +1,42 @@
+name: Convertly Build CD
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Install Poetry
+      run: pipx install poetry
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
+        cache: poetry
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Run build command
+      run: poetry run flet build windows --yes
+      env:
+        PYTHONUTF8: 1
+
+    - name: Zip build output
+      run: Compress-Archive -Path build/windows/* -DestinationPath "convertly-windows-${{ github.event.release.tag_name }}.zip"
+
+    - name: Upload to GitHub Release
+      uses: softprops/action-gh-release@v3
+      with:
+        files: convertly-windows-${{ github.event.release.tag_name }}.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
