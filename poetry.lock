@@ -35,7 +35,7 @@ files = [
     {file = "anyio-4.13.0-py3-none-any.whl", hash = "sha256:08b310f9e24a9594186fd75b4f73f4a4152069e3853f1ed8bfbf58369f4ad708"},
     {file = "anyio-4.13.0.tar.gz", hash = "sha256:334b70e641fd2221c1505b3890c69882fe4a2df910cba14d97019b90b24439dc"},
 ]
-markers = {main = "platform_system != \"Pyodide\""}
+markers = {main = "platform_system != \"Emscripten\""}
 
 [package.dependencies]
 idna = ">=2.8"
@@ -337,79 +337,79 @@ requests = "*"
 
 [[package]]
 name = "flet"
-version = "0.84.0"
+version = "0.85.3"
 description = "Flet for Python - easily build interactive multi-platform apps in Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "flet-0.84.0-py3-none-any.whl", hash = "sha256:0661e317a7451d7ca562dde22520598e0ada74038ea171783c18dbc26c6cc5ca"},
-    {file = "flet-0.84.0.tar.gz", hash = "sha256:f8a4121666c8df2d1c5ea10b14113755895328251b7ce4ab37b140fc8b23fa36"},
+    {file = "flet-0.85.3-py3-none-any.whl", hash = "sha256:c486adc2b6b7640ace3a614e450c5a02f731ef4698e0f0c9b823a6b906484236"},
+    {file = "flet-0.85.3.tar.gz", hash = "sha256:5b606cd86da5866e7071e991dbe4019f09c69360f5993f8c47f93f05aee4ea42"},
 ]
 
 [package.dependencies]
-httpx = {version = ">=0.28.1", markers = "platform_system != \"Pyodide\""}
+httpx = {version = ">=0.28.1", markers = "platform_system != \"Emscripten\""}
 msgpack = ">=1.1.0"
-oauthlib = {version = ">=3.2.2", markers = "platform_system != \"Pyodide\""}
+oauthlib = {version = ">=3.2.2", markers = "platform_system != \"Emscripten\""}
 repath = ">=0.9.0"
 
 [package.extras]
-all = ["flet-cli (==0.84.0)", "flet-desktop (==0.84.0)", "flet-web (==0.84.0)"]
-cli = ["flet-cli (==0.84.0)", "flet-cli (==0.84.0)"]
-desktop = ["flet-desktop (==0.84.0)"]
-web = ["flet-web (==0.84.0)", "flet-web (==0.84.0)"]
+all = ["flet-cli (==0.85.3)", "flet-desktop (==0.85.3)", "flet-web (==0.85.3)"]
+cli = ["flet-cli (==0.85.3)", "flet-cli (==0.85.3)"]
+desktop = ["flet-desktop (==0.85.3)"]
+web = ["flet-web (==0.85.3)", "flet-web (==0.85.3)"]
 
 [[package]]
 name = "flet-cli"
-version = "0.84.0"
+version = "0.85.3"
 description = "Flet CLI"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "flet_cli-0.84.0-py3-none-any.whl", hash = "sha256:20a7106533ed40d3a4c3dbc62ab576e42c4eca9fa7fe136a9f78e41448322bf0"},
-    {file = "flet_cli-0.84.0.tar.gz", hash = "sha256:f7ff547cab621f767487ace75ce1101d301290b79d414845375a9ae2971074dc"},
+    {file = "flet_cli-0.85.3-py3-none-any.whl", hash = "sha256:86f4387b1b890431935bd10ea5cf680e74a44f6958a6f4568d94779fbc297834"},
+    {file = "flet_cli-0.85.3.tar.gz", hash = "sha256:f73985aca94e16754f34a41cb1d41259c8d2b0a539021da5aba3e7a5b42adb4c"},
 ]
 
 [package.dependencies]
 binaryornot = "<0.5"
 chardet = "<6"
 cookiecutter = ">=2.6.0"
-flet = "0.84.0"
+flet = "0.85.3"
 packaging = ">=25.0"
 qrcode = ">=7.4.2"
 watchdog = ">=4.0.0"
 
 [[package]]
 name = "flet-desktop"
-version = "0.84.0"
+version = "0.85.3"
 description = "Flet Desktop client in Flutter"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "flet_desktop-0.84.0-py3-none-any.whl", hash = "sha256:5e91ae87e0f0a0146ff22344aa981b79d7c7a9f535fe70703f3c4f328f521fd1"},
-    {file = "flet_desktop-0.84.0.tar.gz", hash = "sha256:85e2c54372dc61b4e2d594fbcd0f1e47488b6dd23e27ab40a31e753ade83d0af"},
+    {file = "flet_desktop-0.85.3-py3-none-any.whl", hash = "sha256:fcfb9edaf328414e4b8d27d953b92ab9f6b97b0587b3e36afaf34877f0740de2"},
+    {file = "flet_desktop-0.85.3.tar.gz", hash = "sha256:94c1c467bc65e291a403ed2e5b5a177d7d937bbc233b8579396cdc5704be32c7"},
 ]
 
 [package.dependencies]
-flet = "0.84.0"
+flet = "0.85.3"
 
 [[package]]
 name = "flet-web"
-version = "0.84.0"
+version = "0.85.3"
 description = "Flet web client in Flutter."
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "flet_web-0.84.0-py3-none-any.whl", hash = "sha256:55261f0b38d2eb001e2bffabaaa39e5950c660fa2ed29c8549ca615a2fa5fd48"},
-    {file = "flet_web-0.84.0.tar.gz", hash = "sha256:010b1c777fbcd306111f6d5cc571b00bf63b643a42e0fb51bab46f88760dff10"},
+    {file = "flet_web-0.85.3-py3-none-any.whl", hash = "sha256:df229757bc93b1dd9113a82208d83e9397f6c426fc18a5049df84afc64cf4d9c"},
+    {file = "flet_web-0.85.3.tar.gz", hash = "sha256:9fb3d13508d82facd68b58ee5dca84dc4d76082678e64443a55d84ca6fc85068"},
 ]
 
 [package.dependencies]
 fastapi = ">=0.115.12"
-flet = "0.84.0"
+flet = "0.85.3"
 uvicorn = {version = ">=0.35.0", extras = ["standard"]}
 
 [[package]]
@@ -496,7 +496,7 @@ files = [
     {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
     {file = "h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"},
 ]
-markers = {main = "platform_system != \"Pyodide\""}
+markers = {main = "platform_system != \"Emscripten\""}
 
 [[package]]
 name = "httpcore"
@@ -505,7 +505,7 @@ description = "A minimal low-level HTTP client."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
-markers = "platform_system != \"Pyodide\""
+markers = "platform_system != \"Emscripten\""
 files = [
     {file = "httpcore-1.0.9-py3-none-any.whl", hash = "sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"},
     {file = "httpcore-1.0.9.tar.gz", hash = "sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8"},
@@ -581,7 +581,7 @@ description = "The next generation HTTP client."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
-markers = "platform_system != \"Pyodide\""
+markers = "platform_system != \"Emscripten\""
 files = [
     {file = "httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"},
     {file = "httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc"},
@@ -941,7 +941,7 @@ description = "A generic, spec-compliant, thorough implementation of the OAuth r
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
-markers = "platform_system != \"Pyodide\""
+markers = "platform_system != \"Emscripten\""
 files = [
     {file = "oauthlib-3.3.1-py3-none-any.whl", hash = "sha256:88119c938d2b8fb88561af5f6ee0eec8cc8d552b7bb1f712743136eb7523b7a1"},
     {file = "oauthlib-3.3.1.tar.gz", hash = "sha256:0f0f8aa759826a193cf66c12ea1af1637f87b9b4622d46e866952bb022e538c9"},
@@ -2091,4 +2091,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11, <4.0"
-content-hash = "3b4cd3c5d25d43f843299a15b999f24fe3f062ed69f6a78e06aacc578de54faf"
+content-hash = "d76fcab2d152507c837535cb7d8d05af4216e549833ed607f04d9ff4cb0fe99f"

@@ -7,7 +7,7 @@ requires-python = ">=3.11, <4.0"
 authors = [{name = "Ditpowuh"}]
 dependencies = [
     "ffmpeg-binaries-compat (>=1.1.0,<2.0.0)",
-    "flet>=0.84.0",
+    "flet>=0.85.3",
     "fonttools (>=4.62.1,<5.0.0)",
     "numpy (>=2.4.4,<3.0.0)",
     "opencv-python (>=4.13.0.92,<5.0.0.0)",
@@ -19,9 +19,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "flet-cli>=0.84.0",
-    "flet-desktop>=0.84.0",
-    "flet-web>=0.84.0",
+    "flet-cli>=0.85.3",
+    "flet-desktop>=0.85.3",
+    "flet-web>=0.85.3",
     "pytest (>=9.0.3,<10.0.0)"
 ]
 
