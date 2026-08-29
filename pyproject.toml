@@ -22,7 +22,8 @@ dev = [
     "flet-cli>=0.85.3",
     "flet-desktop>=0.85.3",
     "flet-web>=0.85.3",
-    "pytest (>=9.0.3,<10.0.0)"
+    "pytest (>=9.0.3,<10.0.0)",
+    "mypy (>=2.3.1,<3.0.0)"
 ]
 
 [tool.flet]
@@ -42,3 +43,6 @@ message = "Preparing Convertly..."
 [tool.flet.app.startup_screen]
 show = true
 message = "Starting up Convertly..."
+
+[tool.mypy]
+disable_error_code = ["import-untyped"]
