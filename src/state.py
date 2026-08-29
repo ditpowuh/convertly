@@ -6,12 +6,12 @@ import converter
 @dataclass
 @ft.observable
 class AppState:
-    processing = False
-    file = None
-    directory = None
+    processing: bool = False
+    file: str | None = None
+    directory: str | None = None
 
-    possibleExtensions = []
-    desiredExtension = None
+    possibleExtensions: list[str] = []
+    desiredExtension: str | None = None
 
     async def pickFile(self):
         files = await ft.FilePicker().pick_files()

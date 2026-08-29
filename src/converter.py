@@ -1,12 +1,14 @@
 import ffmpeg_binaries as ffmpeg
 from ffmpeg import FFmpeg
 
-from PIL import Image, ImageSequence
+from PIL import Image, ImageFile, ImageSequence
 from fontTools.ttLib import TTFont
 import numpy as np
 import pillow_heif
 import pymupdf
 import cv2
+
+from typing import TypedDict
 
 import zipfile
 import tempfile
@@ -15,7 +17,23 @@ import os
 ffmpeg.init()
 pillow_heif.register_heif_opener()
 
-fileTypes = {
+class OtherTypes(TypedDict, total = False):
+    individual: list[str]
+    group: list[str]
+
+class GroupType(TypedDict, total = False):
+    content: list[str]
+    other: OtherTypes
+
+class IndividualType(TypedDict, total = False):
+    individual: list[str]
+    group: list[str]
+
+class FileTypes(TypedDict):
+    group: dict[str, GroupType]
+    individual: dict[str, IndividualType]
+
+fileTypes: FileTypes = {
     "group": {
         "images": {
             "content": [
@@ -80,8 +98,8 @@ fileTypes = {
     }
 }
 
-def getPossibleExtensions(inputExtension: str):
-    possibleExtensions = []
+def getPossibleExtensions(inputExtension: str) -> list[str]:
+    possibleExtensions: list[str] = []
     if inputExtension in fileTypes["individual"]:
         if "individual" in fileTypes["individual"][inputExtension]:
             possibleExtensions = possibleExtensions + fileTypes["individual"][inputExtension]["individual"]
@@ -101,7 +119,7 @@ def getPossibleExtensions(inputExtension: str):
             return sorted(possibleExtensions)
     return sorted(possibleExtensions)
 
-def getFinalPath(name: str, outputPath: str):
+def getFinalPath(name: str, outputPath: str) -> str:
     fileName = name.split(".")
     finalPath = os.path.join(outputPath, name)
     counter = 1
@@ -110,19 +128,20 @@ def getFinalPath(name: str, outputPath: str):
         finalPath = os.path.join(outputPath, f"{fileName[0]} ({counter}).{fileName[-1]}")
     return finalPath
 
-def getOnlyName(fileName: str):
+def getOnlyName(fileName: str) -> str:
     return ".".join(fileName.split(".")[:-1])
 
-def convertImage(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
+def convertImage(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     with Image.open(inputPath) as img:
-        if targetExtension in ["jpg", "jpeg"] and img.mode in ["RGBA", "P"]:
-            img = img.convert("RGB")
-        img.save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
+        output: Image.Image | ImageFile.ImageFile = img
+        if targetExtension in ["jpg", "jpeg"] and output.mode in ["RGBA", "P"]:
+            output = output.convert("RGB")
+        output.save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
 
-def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
+def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     with Image.open(inputPath) as img:
         width, height = img.size
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        fourcc = cv2.VideoWriter.fourcc(*"mp4v")
         video = cv2.VideoWriter(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), fourcc, 30, (width, height))
 
         for frame in ImageSequence.Iterator(img):
@@ -135,12 +154,12 @@ def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExte
                 video.write(frameBgr)
         video.release()
 
-def convertVideoToGif(fileName: str, inputPath: str, outputPath: str):
+def convertVideoToGif(fileName: str, inputPath: str, outputPath: str) -> None:
     filter = "split[s0][s1];[s0]palettegen=stats_mode=full[p];[s1][p]paletteuse=dither=sierra2_4a"
     ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.gif", outputPath), {"filter_complex": filter, "loop": "0"}))
     ffmpegInstance.execute()
 
-def convertVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
+def convertVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     options = {
         "vcodec": "libx264",
         "acodec": "aac",
@@ -161,23 +180,25 @@ def convertVideo(fileName: str, inputPath: str, outputPath: str, targetExtension
     ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), options))
     ffmpegInstance.execute()
 
-def convertImageToPdf(fileName: str, inputPath: str, outputPath: str):
+def convertImageToPdf(fileName: str, inputPath: str, outputPath: str) -> None:
     with Image.open(inputPath) as img:
-        if img.mode in ["RGBA", "P"]:
-            img = img.convert("RGB")
-        img.save(getFinalPath(f"{getOnlyName(fileName)}.pdf", outputPath), "PDF")
+        output: Image.Image | ImageFile.ImageFile = img
+        if output.mode in ["RGBA", "P"]:
+            output = output.convert("RGB")
+        output.save(getFinalPath(f"{getOnlyName(fileName)}.pdf", outputPath), "PDF")
 
-def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
+def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     doc = pymupdf.open(inputPath)
 
-    images = []
-    for i, page in enumerate(doc):
+    images: list[tuple[int, pymupdf.Pixmap]] = []
+    for i in range(len(doc)):
+        page: pymupdf.Page = doc[i]
         pix = page.get_pixmap(dpi = 200)
         images.append((i, pix))
 
     if len(images) == 1:
         i, pix = images[0]
-        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
         img.save(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath))
     else:
         with zipfile.ZipFile(getFinalPath(f"{getOnlyName(fileName)}.zip", outputPath), "w") as zipf:
@@ -185,24 +206,24 @@ def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExte
                 with tempfile.NamedTemporaryFile(suffix = f".{targetExtension}", delete = False) as temp:
                     tempPath = temp.name
 
-                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
                 img.save(tempPath)
                 zipf.write(tempPath, arcname = f"{getOnlyName(fileName)}_{i + 1}.{targetExtension}")
 
                 os.remove(tempPath)
 
-def convertAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
+def convertAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)))
     ffmpegInstance.execute()
 
-def convertVideoToAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
+def convertVideoToAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     with tempfile.NamedTemporaryFile(suffix = ".wav", delete_on_close = False) as temp:
         ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(temp.name, {"vn": None, "acodec": "pcm_s16le"}))
         ffmpegInstance.execute()
 
         convertAudio(fileName, temp.name, outputPath, targetExtension)
 
-def convertFont(fileName: str, inputPath: str, outputPath: str, targetExtension: str):
+def convertFont(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     font = TTFont(inputPath)
     if targetExtension == "ttf" or targetExtension == "otf":
         font.flavor = None
