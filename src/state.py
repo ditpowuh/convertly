@@ -1,5 +1,5 @@
 import flet as ft
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import converter
 
@@ -10,7 +10,7 @@ class AppState:
     file: str | None = None
     directory: str | None = None
 
-    possibleExtensions: list[str] = []
+    possibleExtensions: list[str] = field(default_factory = list)
     desiredExtension: str | None = None
 
     async def pickFile(self):
