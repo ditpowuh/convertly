@@ -32,5 +32,5 @@ class AppState:
         if path:
             self.directory = path
 
-    def changeTargetExtension(self, event):
-        self.desiredExtension = event.data
+    def changeTargetExtension(self, extension):
+        self.desiredExtension = extension

@@ -2,7 +2,8 @@ import flet as ft
 
 @ft.component
 def FileTypeSelector(state):
-    givenExtension = state.file.name.split(".")[-1].lower() if state.file != None else None
+    def changeFileType(event):
+        state.changeTargetExtension(event.data)
 
     return ft.Row(
         [
@@ -17,8 +18,8 @@ def FileTypeSelector(state):
                             options = [ft.DropdownOption(key = extension, content = ft.Text(extension)) for extension in state.possibleExtensions],
                             disabled = len(state.possibleExtensions) == 0,
                             text_style = ft.TextStyle(weight = ft.FontWeight.BOLD),
-                            value = "" if len(state.possibleExtensions) == 0 else state.possibleExtensions[0],
-                            on_select = state.changeTargetExtension
+                            value = "" if len(state.possibleExtensions) == 0 else state.desiredExtension,
+                            on_select = changeFileType
                         )
                     ],
                     alignment = ft.MainAxisAlignment.CENTER,
