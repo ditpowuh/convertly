@@ -2,9 +2,9 @@
 name = "Convertly"
 version = "0.1.0"
 description = "A Flet application for converting files"
-readme = "README.md"
-requires-python = ">=3.12, <4.0"
 authors = [{name = "Ditpowuh"}]
+requires-python = ">=3.12, <4.0"
+readme = "README.md"
 dependencies = [
     "ffmpeg-binaries-compat (>=1.1.0,<2.0.0)",
     "flet>=0.86.5",
@@ -33,6 +33,10 @@ copyright = "Copyright (C) Ditpowuh 2025"
 org = "com.ditpowuh"
 bundle_id = "com.ditpowuh.convertly"
 
+[tool.flet.compile]
+app = false
+packages = false
+
 [tool.flet.app]
 path = "src"
 
@@ -43,3 +47,6 @@ spinner_size = 32
 
 [tool.mypy]
 disable_error_code = ["import-untyped"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
