@@ -1,5 +1,7 @@
 import ffmpeg_binaries as ffmpeg
 from ffmpeg import FFmpeg
+import subprocess
+import sys
 
 from PIL import Image, ImageFile, ImageSequence
 from fontTools.ttLib import TTFont
@@ -14,7 +16,10 @@ import zipfile
 import tempfile
 import os
 
+from utility import runFFMPEG
+
 ffmpeg.init()
+ffmpeg.add_to_path()
 pillow_heif.register_heif_opener()
 
 class OtherTypes(TypedDict, total = False):
@@ -159,7 +164,7 @@ def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExte
 def convertVideoToGif(fileName: str, inputPath: str, outputPath: str) -> None:
     filter = "split[s0][s1];[s0]palettegen=stats_mode=full[p];[s1][p]paletteuse=dither=sierra2_4a"
     ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.gif", outputPath), {"filter_complex": filter, "loop": "0"}))
-    ffmpegInstance.execute()
+    runFFMPEG(ffmpegInstance)
 
 def convertVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     options = {
@@ -180,7 +185,7 @@ def convertVideo(fileName: str, inputPath: str, outputPath: str, targetExtension
         options["q:v"] = "2"
 
     ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), options))
-    ffmpegInstance.execute()
+    runFFMPEG(ffmpegInstance)
 
 def convertImageToPdf(fileName: str, inputPath: str, outputPath: str) -> None:
     with Image.open(inputPath) as img:
@@ -216,12 +221,12 @@ def convertPdfToImage(fileName: str, inputPath: str, outputPath: str, targetExte
 
 def convertAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath)))
-    ffmpegInstance.execute()
+    runFFMPEG(ffmpegInstance)
 
 def convertVideoToAudio(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     with tempfile.NamedTemporaryFile(suffix = ".wav", delete_on_close = False) as temp:
         ffmpegInstance = (FFmpeg().option("y").input(inputPath).output(temp.name, {"vn": None, "acodec": "pcm_s16le"}))
-        ffmpegInstance.execute()
+        runFFMPEG(ffmpegInstance)
 
         convertAudio(fileName, temp.name, outputPath, targetExtension)
 
