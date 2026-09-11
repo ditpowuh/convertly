@@ -30,7 +30,7 @@ jobs:
       run: uv sync --locked
 
     - name: Run build command
-      run: poetry run flet build windows --yes
+      run: uv run flet build windows --yes
       env:
         PYTHONUTF8: 1
 
