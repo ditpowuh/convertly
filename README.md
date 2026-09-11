@@ -5,10 +5,10 @@
 This app was originally made for my own personal use, where I needed some files to be in other formats without the hassle of online converters or privacy concerns. It is intended to be used on `Windows` devices.
 
 ### How to use
-#### Using Python (Poetry)
-1. Ensure you have [Poetry](https://python-poetry.org/) installed
-1. Install necessary dependencies/requirements via `poetry install`
-3. Run the command `poetry run flet run -r`
+#### Using Python (uv)
+1. Ensure you have [uv](https://docs.astral.sh/uv/) installed
+1. Install necessary dependencies/requirements via `uv sync`
+3. Run the command `uv run flet run -r`
 #### Using Releases
 1. Download the application from `Releases`
 2. Extract the contents of the zip file
@@ -31,7 +31,7 @@ Conversion between different categories is possible for some of them. For exampl
 #### Windows
 The application can be built via the following command (after dependencies are installed):
 ```
-poetry run flet build windows
+uv run flet build windows
 ```
 
 ### Issues
