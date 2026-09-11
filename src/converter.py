@@ -1,7 +1,5 @@
 import ffmpeg_binaries as ffmpeg
 from ffmpeg import FFmpeg
-import subprocess
-import sys
 
 from PIL import Image, ImageFile, ImageSequence
 from fontTools.ttLib import TTFont
