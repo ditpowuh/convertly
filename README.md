@@ -4,6 +4,8 @@
 
 This app was originally made for my own personal use, where I needed some files to be in other formats without the hassle of online converters or privacy concerns. It is intended to be used on `Windows` devices.
 
+If you are using the executable from Releases, it is highly recommended you install the latest version.
+
 ### How to use
 #### Using Python (uv)
 1. Ensure you have [uv](https://docs.astral.sh/uv/) installed
@@ -17,7 +19,7 @@ This app was originally made for my own personal use, where I needed some files 
 ### Supported Files
 - Images (png, jpg, jpeg, webp, bmp, heic, gif)
 - Videos (mp4, m4v, mov, avi, webm, mkv, mpg, vob)
-- Audio (mp3, wav, aac, ogg, m4a, flac, wma, aiff, amr, opus)
+- Audio (mp3, wav, aac, ogg, m4a, flac, wma, aiff, opus)
 - Fonts (otf, ttf, woff, woff2)
 - PDF file
 
