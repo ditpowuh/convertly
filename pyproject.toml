@@ -7,7 +7,7 @@ requires-python = ">=3.12, <4.0"
 authors = [{name = "Ditpowuh"}]
 dependencies = [
     "ffmpeg-binaries-compat (>=1.1.0,<2.0.0)",
-    "flet>=0.85.3",
+    "flet>=0.86.5",
     "fonttools (>=4.64.0,<5.0.0)",
     "numpy (>=2.5.3,<3.0.0)",
     "opencv-python (>=4.13.0.92,<5.0.0.0)",
@@ -19,9 +19,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "flet-cli>=0.85.3",
-    "flet-desktop>=0.85.3",
-    "flet-web>=0.85.3",
+    "flet-cli>=0.86.5",
+    "flet-desktop>=0.86.5",
+    "flet-web>=0.86.5",
     "pytest (>=9.1.1,<10.0.0)",
     "mypy (>=2.3.1,<3.0.0)"
 ]
@@ -36,13 +36,10 @@ bundle_id = "com.ditpowuh.convertly"
 [tool.flet.app]
 path = "src"
 
-[tool.flet.app.boot_screen]
-show = true
-message = "Preparing Convertly..."
-
-[tool.flet.app.startup_screen]
-show = true
-message = "Starting up Convertly..."
+[tool.flet.boot_screen.flet]
+theme_mode = "light"
+spinner_color_light = "indigo"
+spinner_size = 32
 
 [tool.mypy]
 disable_error_code = ["import-untyped"]
