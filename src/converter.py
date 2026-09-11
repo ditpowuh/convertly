@@ -75,7 +75,6 @@ fileTypes: FileTypes = {
                 "flac",
                 "wma",
                 "aiff",
-                "amr",
                 "opus"
             ]
         },
