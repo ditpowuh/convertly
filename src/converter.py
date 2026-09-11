@@ -141,7 +141,10 @@ def convertImage(fileName: str, inputPath: str, outputPath: str, targetExtension
 def convertGifToVideo(fileName: str, inputPath: str, outputPath: str, targetExtension: str) -> None:
     with Image.open(inputPath) as img:
         width, height = img.size
-        fourcc = cv2.VideoWriter.fourcc(*"mp4v")
+        if targetExtension == "webm":
+            fourcc = cv2.VideoWriter.fourcc(*"vp80")
+        else:
+            fourcc = cv2.VideoWriter.fourcc(*"mp4v")
         video = cv2.VideoWriter(getFinalPath(f"{getOnlyName(fileName)}.{targetExtension}", outputPath), fourcc, 30, (width, height))
 
         for frame in ImageSequence.Iterator(img):
