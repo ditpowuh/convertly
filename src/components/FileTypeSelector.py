@@ -14,7 +14,7 @@ def FileTypeSelector(state):
                         ft.Dropdown(
                             filled = True,
                             fill_color = "#f5f2fa",
-                            border_width = 0,
+                            border = ft.OutlineInputBorder(side = ft.BorderSide(width = 0, style = ft.BorderStyle.NONE)),
                             options = [ft.DropdownOption(key = extension, content = ft.Text(extension)) for extension in state.possibleExtensions],
                             disabled = len(state.possibleExtensions) == 0,
                             text_style = ft.TextStyle(weight = ft.FontWeight.BOLD),
